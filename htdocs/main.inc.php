@@ -2444,11 +2444,11 @@ function top_menu_user($hideloginname = 0, $urllogout = '')
 	if (getDolGlobalString('MAIN_MODULE_MULTICOMPANY')) {
 		$dropdownBody .= '<br><b>'.$langs->trans("ConnectedOnMultiCompany").':</b> '.$conf->entity.' (user entity '.$user->entity.')';
 	}
-	$dropdownBody .= '<br><b>'.$langs->trans("AuthenticationMode").':</b> '.$_SESSION["dol_authmode"].(empty($dolibarr_main_demo) ? '' : ' (demo)');
+	// $dropdownBody .= '<br><b>'.$langs->trans("AuthenticationMode").':</b> '.$_SESSION["dol_authmode"].(empty($dolibarr_main_demo) ? '' : ' (demo)');
 	$dropdownBody .= '<br><b>'.$langs->trans("ConnectedSince").':</b> '.dol_print_date($user->datelastlogin, "dayhour", 'tzuser');
 	$dropdownBody .= '<br><b>'.$langs->trans("PreviousConnexion").':</b> '.dol_print_date($user->datepreviouslogin, "dayhour", 'tzuser');
-	$dropdownBody .= '<br><b>'.$langs->trans("CurrentTheme").':</b> '.$conf->theme;
-	$dropdownBody .= '<br><b>'.$langs->trans("CurrentMenuManager").':</b> '.(isset($menumanager) ? $menumanager->name : 'unknown');
+	// $dropdownBody .= '<br><b>'.$langs->trans("CurrentTheme").':</b> '.$conf->theme;
+	// $dropdownBody .= '<br><b>'.$langs->trans("CurrentMenuManager").':</b> '.(isset($menumanager) ? $menumanager->name : 'unknown');
 	$langFlag = picto_from_langcode($langs->getDefaultLang());
 	$dropdownBody .= '<br><b>'.$langs->trans("CurrentUserLanguage").':</b> '.($langFlag ? $langFlag.' ' : '').$langs->getDefaultLang();
 
