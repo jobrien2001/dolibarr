@@ -67,3 +67,9 @@ doc/install.lock
 .idea/jsLinters/jshint.xml
 /composer.json
 /composer.lock
+
+logs/
+.tx/
+build/
+dev/
+doc/
