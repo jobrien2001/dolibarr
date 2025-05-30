@@ -1194,166 +1194,169 @@ if (getDolGlobalString('PRODUIT_MULTIPRICES') || getDolGlobalString('PRODUIT_CUS
 
 		$produit_multiprices_limit = getDolGlobalInt('PRODUIT_MULTIPRICES_LIMIT');
 		for ($i = 1; $i <= $produit_multiprices_limit; $i++) {
-			print '<tr class="oddeven">';
+			// Custom Code to check if user ahs price level necessary
+			if ( $i >= $user->array_options['options_minimumpricelevel'] ) {
+				print '<tr class="oddeven">';
 
-			// Label of price
-			print '<td>';
-			$keyforlabel = 'PRODUIT_MULTIPRICES_LABEL'.$i;
-			if (preg_match('/editlabelsellingprice/', $action)) {
-				print '<form method="post" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'">';
-				print '<input type="hidden" name="token" value="'.newToken().'">';
-				print '<input type="hidden" name="action" value="setlabelsellingprice">';
-				print '<input type="hidden" name="pricelevel" value="'.$i.'">';
-				print $langs->trans("SellingPrice").' '.$i.' - ';
-				print '<input class="maxwidthonsmartphone" type="text" name="labelsellingprice" value="' . getDolGlobalString($keyforlabel).'">';
-				print '&nbsp;<input type="submit" class="button smallpaddingimp" value="'.$langs->trans("Modify").'">';
-				print '</form>';
-			} else {
-				print $langs->trans("SellingPrice").' '.$i;
-				if (getDolGlobalString($keyforlabel)) {
-					print ' - '.$langs->trans(getDolGlobalString($keyforlabel));
-				}
-			}
-			print '</td>';
-
-			if ($object->multiprices_base_type [$i] == 'TTC') {
-				print '<td class="right"><span class="amount">'.price($object->multiprices_ttc[$i]);
-			} else {
-				print '<td class="right"><span class="amount">'.price($object->multiprices[$i]);
-			}
-
-			if ($object->multiprices_base_type[$i]) {
-				print ' '.$langs->trans($object->multiprices_base_type [$i]).'</span></td>';
-			} else {
-				print ' '.$langs->trans($object->price_base_type).'</span></td>';
-			}
-
-			// Prix min
-			print '<td style="text-align: right">';
-			if (empty($object->multiprices_base_type[$i])) {
-				$object->multiprices_base_type[$i] = "HT";
-			}
-			if ($object->multiprices_base_type[$i] == 'TTC') {
-				print price($object->multiprices_min_ttc[$i]).' '.$langs->trans($object->multiprices_base_type[$i]);
-			} else {
-				print price($object->multiprices_min[$i]).' '.$langs->trans($object->multiprices_base_type[$i]);
-			}
-			print '</td>';
-			if (!empty($extralabels)) {
-				$sql1 = "SELECT rowid";
-				$sql1 .= " FROM ".$object->db->prefix()."product_price";
-				$sql1 .= " WHERE entity IN (".getEntity('productprice').")";
-				$sql1 .= " AND price_level=".((int) $i);
-				$sql1 .= " AND fk_product = ".((int) $object->id);
-				$sql1 .= " ORDER BY date_price DESC, rowid DESC";
-				$sql1 .= " LIMIT 1";
-				$resql1 = $object->db->query($sql1);
-				if ($resql1) {
-					$lineid = $object->db->fetch_object($resql1);
-				}
-				$sql2  = "SELECT";
-				$sql2 .= " fk_object";
-				foreach ($extralabels as $key => $value) {
-					$sql2 .= ", ".$key;
-				}
-				$sql2 .= " FROM ".MAIN_DB_PREFIX."product_price_extrafields";
-				$sql2 .= " WHERE fk_object = ".((int) $lineid->rowid);
-				$resql2 = $db->query($sql2);
-				if ($resql2) {
-					if ($db->num_rows($resql2) != 1) {
-						foreach ($extralabels as $key => $value) {
-							if (!empty($extrafields->attributes["product_price"]['list'][$key]) && $extrafields->attributes["product_price"]['list'][$key] != 3) {
-								print '<td align="right"></td>';
-							}
-						}
-					} else {
-						$obj = $db->fetch_object($resql2);
-						foreach ($extralabels as $key => $value) {
-							if (!empty($extrafields->attributes["product_price"]['list'][$key]) && $extrafields->attributes["product_price"]['list'][$key] != 3) {
-								print '<td align="right">'.$extrafields->showOutputField($key, $obj->{$key}, '', 'product_price')."</td>";
-							}
-						}
+				// Label of price
+				print '<td>';
+				$keyforlabel = 'PRODUIT_MULTIPRICES_LABEL'.$i;
+				if (preg_match('/editlabelsellingprice/', $action)) {
+					print '<form method="post" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'">';
+					print '<input type="hidden" name="token" value="'.newToken().'">';
+					print '<input type="hidden" name="action" value="setlabelsellingprice">';
+					print '<input type="hidden" name="pricelevel" value="'.$i.'">';
+					print $langs->trans("SellingPrice").' '.$i.' - ';
+					print '<input class="maxwidthonsmartphone" type="text" name="labelsellingprice" value="' . getDolGlobalString($keyforlabel).'">';
+					print '&nbsp;<input type="submit" class="button smallpaddingimp" value="'.$langs->trans("Modify").'">';
+					print '</form>';
+				} else {
+					print $langs->trans("SellingPrice").' '.$i;
+					if (getDolGlobalString($keyforlabel)) {
+						print ' - '.$langs->trans(getDolGlobalString($keyforlabel));
 					}
-					$db->free($resql1);
-					$db->free($resql2);
 				}
-			}
-			print '</tr>';
+				print '</td>';
 
-			// Price by quantity
-			if (getDolGlobalString('PRODUIT_CUSTOMER_PRICES_BY_QTY') || getDolGlobalString('PRODUIT_CUSTOMER_PRICES_BY_QTY_MULTIPRICES')) {      // TODO Fix the form included into a tr instead of a td
-				print '<tr><td>'.$langs->trans("PriceByQuantity").' '.$i;
-				if (getDolGlobalString($keyforlabel)) {
-					print ' - '.$langs->trans(getDolGlobalString($keyforlabel));
+				if ($object->multiprices_base_type [$i] == 'TTC') {
+					print '<td class="right"><span class="amount">'.price($object->multiprices_ttc[$i]);
+				} else {
+					print '<td class="right"><span class="amount">'.price($object->multiprices[$i]);
 				}
-				print '</td><td colspan="2">';
 
-				if ($object->prices_by_qty[$i] == 1) {
-					print '<table width="50%" class="border" summary="List of quantities">';
+				if ($object->multiprices_base_type[$i]) {
+					print ' '.$langs->trans($object->multiprices_base_type [$i]).'</span></td>';
+				} else {
+					print ' '.$langs->trans($object->price_base_type).'</span></td>';
+				}
 
-					print '<tr class="liste_titre">';
-					print '<td>'.$langs->trans("PriceByQuantityRange").' '.$i.'</td>';
-					print '<td class="right">'.$langs->trans("HT").'</td>';
-					print '<td class="right">'.$langs->trans("UnitPrice").'</td>';
-					print '<td class="right">'.$langs->trans("Discount").'</td>';
-					print '<td>&nbsp;</td>';
-					print '</tr>';
-					foreach ($object->prices_by_qty_list[$i] as $ii => $prices) {
-						if ($action == 'edit_price_by_qty' && $rowid == $prices['rowid'] && ($user->hasRight('produit', 'creer') || $user->hasRight('service', 'creer'))) {
+				// Prix min
+				print '<td style="text-align: right">';
+				if (empty($object->multiprices_base_type[$i])) {
+					$object->multiprices_base_type[$i] = "HT";
+				}
+				if ($object->multiprices_base_type[$i] == 'TTC') {
+					print price($object->multiprices_min_ttc[$i]).' '.$langs->trans($object->multiprices_base_type[$i]);
+				} else {
+					print price($object->multiprices_min[$i]).' '.$langs->trans($object->multiprices_base_type[$i]);
+				}
+				print '</td>';
+				if (!empty($extralabels)) {
+					$sql1 = "SELECT rowid";
+					$sql1 .= " FROM ".$object->db->prefix()."product_price";
+					$sql1 .= " WHERE entity IN (".getEntity('productprice').")";
+					$sql1 .= " AND price_level=".((int) $i);
+					$sql1 .= " AND fk_product = ".((int) $object->id);
+					$sql1 .= " ORDER BY date_price DESC, rowid DESC";
+					$sql1 .= " LIMIT 1";
+					$resql1 = $object->db->query($sql1);
+					if ($resql1) {
+						$lineid = $object->db->fetch_object($resql1);
+					}
+					$sql2  = "SELECT";
+					$sql2 .= " fk_object";
+					foreach ($extralabels as $key => $value) {
+						$sql2 .= ", ".$key;
+					}
+					$sql2 .= " FROM ".MAIN_DB_PREFIX."product_price_extrafields";
+					$sql2 .= " WHERE fk_object = ".((int) $lineid->rowid);
+					$resql2 = $db->query($sql2);
+					if ($resql2) {
+						if ($db->num_rows($resql2) != 1) {
+							foreach ($extralabels as $key => $value) {
+								if (!empty($extrafields->attributes["product_price"]['list'][$key]) && $extrafields->attributes["product_price"]['list'][$key] != 3) {
+									print '<td align="right"></td>';
+								}
+							}
+						} else {
+							$obj = $db->fetch_object($resql2);
+							foreach ($extralabels as $key => $value) {
+								if (!empty($extrafields->attributes["product_price"]['list'][$key]) && $extrafields->attributes["product_price"]['list'][$key] != 3) {
+									print '<td align="right">'.$extrafields->showOutputField($key, $obj->{$key}, '', 'product_price')."</td>";
+								}
+							}
+						}
+						$db->free($resql1);
+						$db->free($resql2);
+					}
+				}
+				print '</tr>';
+
+				// Price by quantity
+				if (getDolGlobalString('PRODUIT_CUSTOMER_PRICES_BY_QTY') || getDolGlobalString('PRODUIT_CUSTOMER_PRICES_BY_QTY_MULTIPRICES')) {      // TODO Fix the form included into a tr instead of a td
+					print '<tr><td>'.$langs->trans("PriceByQuantity").' '.$i;
+					if (getDolGlobalString($keyforlabel)) {
+						print ' - '.$langs->trans(getDolGlobalString($keyforlabel));
+					}
+					print '</td><td colspan="2">';
+
+					if ($object->prices_by_qty[$i] == 1) {
+						print '<table width="50%" class="border" summary="List of quantities">';
+
+						print '<tr class="liste_titre">';
+						print '<td>'.$langs->trans("PriceByQuantityRange").' '.$i.'</td>';
+						print '<td class="right">'.$langs->trans("HT").'</td>';
+						print '<td class="right">'.$langs->trans("UnitPrice").'</td>';
+						print '<td class="right">'.$langs->trans("Discount").'</td>';
+						print '<td>&nbsp;</td>';
+						print '</tr>';
+						foreach ($object->prices_by_qty_list[$i] as $ii => $prices) {
+							if ($action == 'edit_price_by_qty' && $rowid == $prices['rowid'] && ($user->hasRight('produit', 'creer') || $user->hasRight('service', 'creer'))) {
+								print '<form action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" method="POST">';
+								print '<input type="hidden" name="token" value="'.newToken().'">';
+								print '<input type="hidden" name="action" value="update_price_by_qty">';
+								print '<input type="hidden" name="priceid" value="'.$object->prices_by_qty_id[$i].'">';
+								print '<input type="hidden" value="'.$prices['rowid'].'" name="rowid">';
+								print '<tr class="'.($ii % 2 == 0 ? 'pair' : 'impair').'">';
+								print '<td><input size="5" type="text" value="'.$prices['quantity'].'" name="quantity"></td>';
+								print '<td class="right" colspan="2"><input size="10" type="text" value="'.price2num($prices['price'], 'MU').'" name="price">&nbsp;'.$object->price_base_type.'</td>';
+								print '<td class="right nowraponall"><input size="5" type="text" value="'.$prices['remise_percent'].'" name="remise_percent"> %</td>';
+								print '<td class="center"><input type="submit" value="'.$langs->trans("Modify").'" class="button"></td>';
+								print '</tr>';
+								print '</form>';
+							} else {
+								print '<tr class="'.($ii % 2 == 0 ? 'pair' : 'impair').'">';
+								print '<td>'.$prices['quantity'].'</td>';
+								print '<td class="right">'.price($prices['price']).'</td>';
+								print '<td class="right">'.price($prices['unitprice']).'</td>';
+								print '<td class="right">'.price($prices['remise_percent']).' %</td>';
+								print '<td class="center">';
+								if (($user->hasRight('produit', 'creer') || $user->hasRight('service', 'creer'))) {
+									print '<a class="editfielda marginleftonly marginrightonly" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=edit_price_by_qty&token='.newToken().'&rowid='.$prices["rowid"].'">';
+									print img_edit().'</a>';
+									print '<a class="marginleftonly marginrightonly" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=delete_price_by_qty&token='.newToken().'&rowid='.$prices["rowid"].'">';
+									print img_delete().'</a>';
+								} else {
+									print '&nbsp;';
+								}
+								print '</td>';
+								print '</tr>';
+							}
+						}
+						if ($action != 'edit_price_by_qty' && ($user->hasRight('produit', 'creer') || $user->hasRight('service', 'creer'))) {
 							print '<form action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" method="POST">';
 							print '<input type="hidden" name="token" value="'.newToken().'">';
 							print '<input type="hidden" name="action" value="update_price_by_qty">';
-							print '<input type="hidden" name="priceid" value="'.$object->prices_by_qty_id[$i].'">';
-							print '<input type="hidden" value="'.$prices['rowid'].'" name="rowid">';
+							print '<input type="hidden" name="priceid" value="'.$object->prices_by_qty_id[$i].'">'; // id in product_price
+							print '<input type="hidden" value="0" name="rowid">'; // id in product_price
 							print '<tr class="'.($ii % 2 == 0 ? 'pair' : 'impair').'">';
-							print '<td><input size="5" type="text" value="'.$prices['quantity'].'" name="quantity"></td>';
-							print '<td class="right" colspan="2"><input size="10" type="text" value="'.price2num($prices['price'], 'MU').'" name="price">&nbsp;'.$object->price_base_type.'</td>';
-							print '<td class="right nowraponall"><input size="5" type="text" value="'.$prices['remise_percent'].'" name="remise_percent"> %</td>';
-							print '<td class="center"><input type="submit" value="'.$langs->trans("Modify").'" class="button"></td>';
+							print '<td><input size="5" type="text" value="1" name="quantity"></td>';
+							print '<td class="right" class="nowrap"><input size="10" type="text" value="0" name="price">&nbsp;'.$object->price_base_type.'</td>';
+							print '<td class="right">&nbsp;</td>';
+							print '<td class="right" class="nowraponall"><input size="5" type="text" value="0" name="remise_percent"> %</td>';
+							print '<td class="center"><input type="submit" value="'.$langs->trans("Add").'" class="button"></td>';
 							print '</tr>';
 							print '</form>';
-						} else {
-							print '<tr class="'.($ii % 2 == 0 ? 'pair' : 'impair').'">';
-							print '<td>'.$prices['quantity'].'</td>';
-							print '<td class="right">'.price($prices['price']).'</td>';
-							print '<td class="right">'.price($prices['unitprice']).'</td>';
-							print '<td class="right">'.price($prices['remise_percent']).' %</td>';
-							print '<td class="center">';
-							if (($user->hasRight('produit', 'creer') || $user->hasRight('service', 'creer'))) {
-								print '<a class="editfielda marginleftonly marginrightonly" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=edit_price_by_qty&token='.newToken().'&rowid='.$prices["rowid"].'">';
-								print img_edit().'</a>';
-								print '<a class="marginleftonly marginrightonly" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=delete_price_by_qty&token='.newToken().'&rowid='.$prices["rowid"].'">';
-								print img_delete().'</a>';
-							} else {
-								print '&nbsp;';
-							}
-							print '</td>';
-							print '</tr>';
 						}
-					}
-					if ($action != 'edit_price_by_qty' && ($user->hasRight('produit', 'creer') || $user->hasRight('service', 'creer'))) {
-						print '<form action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" method="POST">';
-						print '<input type="hidden" name="token" value="'.newToken().'">';
-						print '<input type="hidden" name="action" value="update_price_by_qty">';
-						print '<input type="hidden" name="priceid" value="'.$object->prices_by_qty_id[$i].'">'; // id in product_price
-						print '<input type="hidden" value="0" name="rowid">'; // id in product_price
-						print '<tr class="'.($ii % 2 == 0 ? 'pair' : 'impair').'">';
-						print '<td><input size="5" type="text" value="1" name="quantity"></td>';
-						print '<td class="right" class="nowrap"><input size="10" type="text" value="0" name="price">&nbsp;'.$object->price_base_type.'</td>';
-						print '<td class="right">&nbsp;</td>';
-						print '<td class="right" class="nowraponall"><input size="5" type="text" value="0" name="remise_percent"> %</td>';
-						print '<td class="center"><input type="submit" value="'.$langs->trans("Add").'" class="button"></td>';
-						print '</tr>';
-						print '</form>';
-					}
 
-					print '</table>';
-					print '<a class="editfielda marginleftonly marginrightonly" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=disable_price_by_qty&level='.$i.'&token='.newToken().'">('.$langs->trans("DisablePriceByQty").')</a>';
-				} else {
-					print $langs->trans("No");
-					print '&nbsp; <a class="marginleftonly marginrightonly" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=activate_price_by_qty&level='.$i.'&token='.newToken().'">('.$langs->trans("Activate").')</a>';
+						print '</table>';
+						print '<a class="editfielda marginleftonly marginrightonly" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=disable_price_by_qty&level='.$i.'&token='.newToken().'">('.$langs->trans("DisablePriceByQty").')</a>';
+					} else {
+						print $langs->trans("No");
+						print '&nbsp; <a class="marginleftonly marginrightonly" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=activate_price_by_qty&level='.$i.'&token='.newToken().'">('.$langs->trans("Activate").')</a>';
+					}
+					print '</td></tr>';
 				}
-				print '</td></tr>';
 			}
 		}
 	}
@@ -1799,101 +1802,104 @@ if (($action == 'edit_price' || $action == 'edit_level_price') && $object->getRi
 
 		$produit_multiprices_limit = getDolGlobalInt('PRODUIT_MULTIPRICES_LIMIT');
 		for ($i = 1; $i <= $produit_multiprices_limit; $i++) {
-			print '<tr class="oddeven">';
-			print '<td>';
-			$keyforlabel = 'PRODUIT_MULTIPRICES_LABEL'.$i;
-			$text = $langs->trans('SellingPrice').' '.$i.' - '.getDolGlobalString($keyforlabel);
-			print $form->textwithpicto($text, $langs->trans("PrecisionUnitIsLimitedToXDecimals", getDolGlobalString('MAIN_MAX_DECIMALS_UNIT')), 1, 1);
-			print '</td>';
-
-			// VAT
-			if (!getDolGlobalString('PRODUIT_MULTIPRICES_USE_VAT_PER_LEVEL')) {
+			// Custom Code to check if user ahs price level necessary
+			if ( $i >= $user->array_options['options_minimumpricelevel'] ) {
+				print '<tr class="oddeven">';
 				print '<td>';
-				print '<input type="hidden" name="tva_tx['.$i.']" value="'.($object->default_vat_code ? $object->tva_tx.' ('.$object->default_vat_code.')' : $object->tva_tx).'">';
-				print '<input type="hidden" name="tva_npr['.$i.']" value="'.$object->tva_npr.'">';
-				print '<input type="hidden" name="localtax1_tx['.$i.']" value="'.$object->localtax1_tx.'">';
-				print '<input type="hidden" name="localtax1_type['.$i.']" value="'.$object->localtax1_type.'">';
-				print '<input type="hidden" name="localtax2_tx['.$i.']" value="'.$object->localtax2_tx.'">';
-				print '<input type="hidden" name="localtax2_type['.$i.']" value="'.$object->localtax2_type.'">';
+				$keyforlabel = 'PRODUIT_MULTIPRICES_LABEL'.$i;
+				$text = $langs->trans('SellingPrice').' '.$i.' - '.getDolGlobalString($keyforlabel);
+				print $form->textwithpicto($text, $langs->trans("PrecisionUnitIsLimitedToXDecimals", getDolGlobalString('MAIN_MAX_DECIMALS_UNIT')), 1, 1);
 				print '</td>';
-			} else {
-				// This option is kept for backward compatibility but has no sense
-				print '<td style="text-align: center">';
-				print $form->load_tva("tva_tx[".$i.']', $object->multiprices_tva_tx[$i], $mysoc, '', $object->id, false, $object->type, false, 1);
-				print '</td>';
-			}
 
-			// Selling price
-			print '<td style="text-align: center">';
-			if ($object->multiprices_base_type [$i] == 'TTC') {
-				print '<input name="price['.$i.']" size="10" value="'.price($object->multiprices_ttc [$i]).'">';
-			} else {
-				print '<input name="price['.$i.']" size="10" value="'.price($object->multiprices [$i]).'">';
-			}
-			print '&nbsp;'.$form->selectPriceBaseType($object->multiprices_base_type [$i], "multiprices_base_type[".$i."]");
-			print '</td>';
-
-			// Min price
-			print '<td style="text-align: center">';
-			if ($object->multiprices_base_type [$i] == 'TTC') {
-				print '<input name="price_min['.$i.']" size="10" value="'.price($object->multiprices_min_ttc [$i]).'">';
-			} else {
-				print '<input name="price_min['.$i.']" size="10" value="'.price($object->multiprices_min [$i]).'">';
-			}
-			if (getDolGlobalString('PRODUCT_MINIMUM_RECOMMENDED_PRICE')) {
-				print '<td class="left">'.$langs->trans("MinimumRecommendedPrice", price($maxpricesupplier, 0, '', 1, -1, -1, 'auto')).' '.img_warning().'</td>';
-			}
-			print '</td>';
-
-			if (!empty($extralabels)) {
-				$sql1 = "SELECT rowid";
-				$sql1 .= " FROM ".$object->db->prefix()."product_price";
-				$sql1 .= " WHERE entity IN (".getEntity('productprice').")";
-				$sql1 .= " AND price_level=".((int) $i);
-				$sql1 .= " AND fk_product = ".((int) $object->id);
-				$sql1 .= " ORDER BY date_price DESC, rowid DESC";
-				$sql1 .= " LIMIT 1";
-				$resql1 = $object->db->query($sql1);
-				if ($resql1) {
-					$lineid = $object->db->fetch_object($resql1);
-				}
-				if (empty($lineid->rowid)) {
-					foreach ($extralabels as $key => $value) {
-						if (!empty($extrafields->attributes["product_price"]['list'][$key]) && ($extrafields->attributes["product_price"]['list'][$key] == 1 || $extrafields->attributes["product_price"]['list'][$key] == 3 || ($action == "edit_level_price" && $extrafields->attributes["product_price"]['list'][$key] == 4))) {
-							if (!empty($extrafields->attributes["product_price"]['langfile'][$key])) {
-								$langs->load($extrafields->attributes["product_price"]['langfile'][$key]);
-							}
-
-							$extravalue = GETPOSTISSET('options_'.$key) ? $extrafield_values['options_'.$key] : $obj->{$key};
-							print '<td align="center"><input name="'.$key.'['.$i.']" size="10" value="'.$extravalue.'"></td>';
-						}
-					}
+				// VAT
+				if (!getDolGlobalString('PRODUIT_MULTIPRICES_USE_VAT_PER_LEVEL')) {
+					print '<td>';
+					print '<input type="hidden" name="tva_tx['.$i.']" value="'.($object->default_vat_code ? $object->tva_tx.' ('.$object->default_vat_code.')' : $object->tva_tx).'">';
+					print '<input type="hidden" name="tva_npr['.$i.']" value="'.$object->tva_npr.'">';
+					print '<input type="hidden" name="localtax1_tx['.$i.']" value="'.$object->localtax1_tx.'">';
+					print '<input type="hidden" name="localtax1_type['.$i.']" value="'.$object->localtax1_type.'">';
+					print '<input type="hidden" name="localtax2_tx['.$i.']" value="'.$object->localtax2_tx.'">';
+					print '<input type="hidden" name="localtax2_type['.$i.']" value="'.$object->localtax2_type.'">';
+					print '</td>';
 				} else {
-					$sql  = "SELECT";
-					$sql .= " fk_object";
-					foreach ($extralabels as $key => $value) {
-						$sql .= ", ".$key;
+					// This option is kept for backward compatibility but has no sense
+					print '<td style="text-align: center">';
+					print $form->load_tva("tva_tx[".$i.']', $object->multiprices_tva_tx[$i], $mysoc, '', $object->id, false, $object->type, false, 1);
+					print '</td>';
+				}
+
+				// Selling price
+				print '<td style="text-align: center">';
+				if ($object->multiprices_base_type [$i] == 'TTC') {
+					print '<input name="price['.$i.']" size="10" value="'.price($object->multiprices_ttc [$i]).'">';
+				} else {
+					print '<input name="price['.$i.']" size="10" value="'.price($object->multiprices [$i]).'">';
+				}
+				print '&nbsp;'.$form->selectPriceBaseType($object->multiprices_base_type [$i], "multiprices_base_type[".$i."]");
+				print '</td>';
+
+				// Min price
+				print '<td style="text-align: center">';
+				if ($object->multiprices_base_type [$i] == 'TTC') {
+					print '<input name="price_min['.$i.']" size="10" value="'.price($object->multiprices_min_ttc [$i]).'">';
+				} else {
+					print '<input name="price_min['.$i.']" size="10" value="'.price($object->multiprices_min [$i]).'">';
+				}
+				if (getDolGlobalString('PRODUCT_MINIMUM_RECOMMENDED_PRICE')) {
+					print '<td class="left">'.$langs->trans("MinimumRecommendedPrice", price($maxpricesupplier, 0, '', 1, -1, -1, 'auto')).' '.img_warning().'</td>';
+				}
+				print '</td>';
+
+				if (!empty($extralabels)) {
+					$sql1 = "SELECT rowid";
+					$sql1 .= " FROM ".$object->db->prefix()."product_price";
+					$sql1 .= " WHERE entity IN (".getEntity('productprice').")";
+					$sql1 .= " AND price_level=".((int) $i);
+					$sql1 .= " AND fk_product = ".((int) $object->id);
+					$sql1 .= " ORDER BY date_price DESC, rowid DESC";
+					$sql1 .= " LIMIT 1";
+					$resql1 = $object->db->query($sql1);
+					if ($resql1) {
+						$lineid = $object->db->fetch_object($resql1);
 					}
-					$sql .= " FROM ".MAIN_DB_PREFIX."product_price_extrafields";
-					$sql .= " WHERE fk_object = ".((int) $lineid->rowid);
-					$resql = $db->query($sql);
-					if ($resql) {
-						$obj = $db->fetch_object($resql);
+					if (empty($lineid->rowid)) {
 						foreach ($extralabels as $key => $value) {
 							if (!empty($extrafields->attributes["product_price"]['list'][$key]) && ($extrafields->attributes["product_price"]['list'][$key] == 1 || $extrafields->attributes["product_price"]['list'][$key] == 3 || ($action == "edit_level_price" && $extrafields->attributes["product_price"]['list'][$key] == 4))) {
 								if (!empty($extrafields->attributes["product_price"]['langfile'][$key])) {
 									$langs->load($extrafields->attributes["product_price"]['langfile'][$key]);
 								}
 
-								$extravalue = (GETPOSTISSET('options_'.$key) ? $extrafield_values['options_'.$key] : $obj->{$key} ?? '');
+								$extravalue = GETPOSTISSET('options_'.$key) ? $extrafield_values['options_'.$key] : $obj->{$key};
 								print '<td align="center"><input name="'.$key.'['.$i.']" size="10" value="'.$extravalue.'"></td>';
 							}
 						}
-						$db->free($resql);
+					} else {
+						$sql  = "SELECT";
+						$sql .= " fk_object";
+						foreach ($extralabels as $key => $value) {
+							$sql .= ", ".$key;
+						}
+						$sql .= " FROM ".MAIN_DB_PREFIX."product_price_extrafields";
+						$sql .= " WHERE fk_object = ".((int) $lineid->rowid);
+						$resql = $db->query($sql);
+						if ($resql) {
+							$obj = $db->fetch_object($resql);
+							foreach ($extralabels as $key => $value) {
+								if (!empty($extrafields->attributes["product_price"]['list'][$key]) && ($extrafields->attributes["product_price"]['list'][$key] == 1 || $extrafields->attributes["product_price"]['list'][$key] == 3 || ($action == "edit_level_price" && $extrafields->attributes["product_price"]['list'][$key] == 4))) {
+									if (!empty($extrafields->attributes["product_price"]['langfile'][$key])) {
+										$langs->load($extrafields->attributes["product_price"]['langfile'][$key]);
+									}
+
+									$extravalue = (GETPOSTISSET('options_'.$key) ? $extrafield_values['options_'.$key] : $obj->{$key} ?? '');
+									print '<td align="center"><input name="'.$key.'['.$i.']" size="10" value="'.$extravalue.'"></td>';
+								}
+							}
+							$db->free($resql);
+						}
 					}
 				}
+				print '</tr>';
 			}
-			print '</tr>';
 		}
 
 		print '</tbody>';
