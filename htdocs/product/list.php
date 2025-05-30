@@ -307,14 +307,18 @@ $arrayfields = array(
 if (getDolGlobalString('PRODUIT_MULTIPRICES')) {
 	$produit_multiprices_limit = getDolGlobalInt('PRODUIT_MULTIPRICES_LIMIT');
 	for ($i = 1; $i <= $produit_multiprices_limit; $i++) {
-		$keyforlabel = 'PRODUIT_MULTIPRICES_LABEL'.$i;
-		if (getDolGlobalString($keyforlabel)) {
-			$labelp = $i.' - '.$langs->transnoentitiesnoconv(getDolGlobalString($keyforlabel));
-		} else {
-			$labelp = $langs->transnoentitiesnoconv("SellingPrice")." ".$i;
+		// Custom Code to check if user ahs price level necessary
+		if ( $i >= $user->array_options['options_minimumpricelevel'] ) {
+		// Custom Code End
+			$keyforlabel = 'PRODUIT_MULTIPRICES_LABEL'.$i;
+			if (getDolGlobalString($keyforlabel)) {
+				$labelp = $i.' - '.$langs->transnoentitiesnoconv(getDolGlobalString($keyforlabel));
+			} else {
+				$labelp = $langs->transnoentitiesnoconv("SellingPrice")." ".$i;
+			}
+			$arrayfields['p.sellprice'.$i] = array('label' => $labelp, 'checked' => ($i == 1 ? 1 : 0), 'enabled' => getDolGlobalString('PRODUIT_MULTIPRICES'), 'position' => (float) ('40.'.sprintf('%03d', $i)));
+			$arraypricelevel[$i] = array($i);
 		}
-		$arrayfields['p.sellprice'.$i] = array('label' => $labelp, 'checked' => ($i == 1 ? 1 : 0), 'enabled' => getDolGlobalString('PRODUIT_MULTIPRICES'), 'position' => (float) ('40.'.sprintf('%03d', $i)));
-		$arraypricelevel[$i] = array($i);
 	}
 }
 
