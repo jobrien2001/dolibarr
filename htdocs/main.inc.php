@@ -2531,7 +2531,8 @@ function top_menu($head, $title = '', $target = '', $disablejs = 0, $disablehead
 
 		// Version
 		if (!getDolGlobalString('MAIN_OPTIMIZEFORTEXTBROWSER') && getDolGlobalInt('MAIN_HIDE_VERSION') == 0) {
-			$text = '<span class="aversion"><span class="hideonsmartphone small">'.DOL_VERSION.'</span></span>';
+			// $text = '<span class="aversion"><span class="hideonsmartphone small">'.DOL_VERSION.'</span></span>';
+			$text = '';
 			// @phan-suppress-next-line PhanPluginSuspiciousParamPosition
 			$toprightmenu .= $form->textwithtooltip('', $appli, 2, 1, $text, 'login_block_elem', 2);
 		}
